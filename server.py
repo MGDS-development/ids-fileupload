@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
-from flask import Flask, send_file, jsonify
-from flask_restful import Resource, Api, reqparse, Response
+from flask import Flask, send_file, jsonify, Response
+from flask_restful import Resource, Api, reqparse
 from werkzeug import datastructures
 import tempfile
 import os
 import uuid
 import hashlib
 
-parser = reqparse.RequestParser()
-parser.add_argument('file',type=datastructures.FileStorage, location='files')
+p1 = reqparse.RequestParser()
+p1.add_argument('file',type=datastructures.FileStorage, location='files')
 
-parser = reqparse.RequestParser()
-parser.add_argument('id', type=str, location='args')
+p2 = reqparse.RequestParser()
+p2.add_argument('id', type=str, location='args')
 
 app = Flask(__name__)
 api = Api(app)
@@ -30,17 +30,21 @@ with open(file, 'rb') as f: # Open the file to read it's bytes
 class Download(Resource):
     def get(self):
         
-        for f in os.listdir(root_path):
-			
-			if f.split(".")[0] == data['id']
+        data = p2.parse_args()
         
-        return send_file(outputFile, as_attachment=True)
+        for f in os.listdir(root_path):
+            
+            if f.split(".")[0] == data['id']:
+                
+                print(f)
+        
+                return send_file(f, as_attachment=True)
 
 
 class Upload(Resource):
     def post(self):
         
-        data = parser.parse_args()
+        data = p1.parse_args()
         
         hash_file = hashlib.sha256()
         
@@ -49,16 +53,14 @@ class Upload(Resource):
         print(data)
         
         if data['file'] is None or data['file'].filename == '':
-			
-			response['error'] = 'No file'
-			response['data'] = 'none'
-			
+            
+            response['error'] = 'No file'
+            response['data'] = 'none'
+            
             return Response(jsonify(response), status=400, mimetype='application/json')
             
         else:
-            
-            #temp_out = tempfile.NamedTemporaryFile(prefix="mapeathor-api").name
-            
+                        
             file_name = root_path + response['data']['id'] + data['file'].filename.rsplit('.', 1)[1].lower()
             
             print(file_name)
