@@ -9,7 +9,7 @@ import uuid
 import hashlib
 import json
 
-key = os.environ.get("IDS-FILEUPLOAD-APIKEY")
+key = os.environ.get("IDS_FILEUPLOAD_APIKEY")
 
 p1 = reqparse.RequestParser()
 p1.add_argument('file',type=datastructures.FileStorage, location='files')
