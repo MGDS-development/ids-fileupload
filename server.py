@@ -9,7 +9,9 @@ import uuid
 import hashlib
 import json
 
-key = os.environ.get("IDS-FILEUPLOAD-APIKEY")
+key = os.environ.get("IDS_FILEUPLOAD_APIKEY")
+
+print("Auth key is:", key)
 
 p1 = reqparse.RequestParser()
 p1.add_argument('file',type=datastructures.FileStorage, location='files')
@@ -40,7 +42,7 @@ class Download(Resource):
         
         json_response = {'error': 'none'}
         
-        if data['Authorization'] == key:        
+        if data['Authorization'] == key:
         
             for f in os.listdir(root_path):
                 
@@ -51,6 +53,7 @@ class Download(Resource):
                     return send_file(root_path + f, as_attachment=True)
                     
         else:
+            print(data)
             
             json_response['error'] = 'Not authorized'
             
