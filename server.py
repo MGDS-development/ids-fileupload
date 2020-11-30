@@ -7,6 +7,7 @@ import tempfile
 import os
 import uuid
 import hashlib
+import json
 
 p1 = reqparse.RequestParser()
 p1.add_argument('file',type=datastructures.FileStorage, location='files')
@@ -38,7 +39,7 @@ class Download(Resource):
                 
                 print(f)
         
-                return send_file(f, as_attachment=True)
+                return send_file(root_path + f, as_attachment=True)
 
 
 class Upload(Resource):
@@ -48,27 +49,26 @@ class Upload(Resource):
         
         hash_file = hashlib.sha256()
         
-        response = {'error': 'none', 'data': {'id': uuid.uuid4(), 'sha256sum': 0}}
+        json_response = {'error': 'none', 'data': {'id': str(uuid.uuid4()), 'sha256sum': 0}}
         
         print(data)
         
         if data['file'] is None or data['file'].filename == '':
             
-            response['error'] = 'No file'
-            response['data'] = 'none'
+            json_response['error'] = 'No file'
+            json_response['data'] = 'none'
             
-            return Response(jsonify(response), status=400, mimetype='application/json')
+            return Response(json.dumps(json_response), status=400, mimetype='application/json')
             
         else:
                         
-            file_name = root_path + response['data']['id'] + data['file'].filename.rsplit('.', 1)[1].lower()
+            file_name = root_path + json_response['data']['id'] + "." + data['file'].filename.rsplit('.', 1)[1].lower()
             
             print(file_name)
             
-            data['file'].save(filename)
+            data['file'].save(file_name)
             
-            
-            
+            return Response(json.dumps(json_response), status=200, mimetype='application/json')
             
 
 api.add_resource(Download, "/download")
