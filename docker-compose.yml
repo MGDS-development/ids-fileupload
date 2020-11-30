@@ -2,6 +2,8 @@ version: '3.5'
 services:
   ids-fileupload:
     build: .
+    volumes:
+      - /opt/ids/dynamic-data:/data
     ports:
       - 60084:80
     environment:
