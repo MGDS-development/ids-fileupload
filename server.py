@@ -9,11 +9,16 @@ import uuid
 import hashlib
 import json
 
+key = os.environ.get("IDS-FILEUPLOAD-APIKEY")
+
 p1 = reqparse.RequestParser()
 p1.add_argument('file',type=datastructures.FileStorage, location='files')
+p1.add_argument('Authorization', location='headers')
 
 p2 = reqparse.RequestParser()
 p2.add_argument('id', type=str, location='args')
+p2.add_argument('Authorization', location='headers')
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -33,13 +38,23 @@ class Download(Resource):
         
         data = p2.parse_args()
         
-        for f in os.listdir(root_path):
-            
-            if f.split(".")[0] == data['id']:
-                
-                print(f)
+        json_response = {'error': 'none'}
         
-                return send_file(root_path + f, as_attachment=True)
+        if data['Authorization'] == key:        
+        
+            for f in os.listdir(root_path):
+                
+                if f.split(".")[0] == data['id']:
+                    
+                    print(f)
+            
+                    return send_file(root_path + f, as_attachment=True)
+                    
+        else:
+            
+            json_response['error'] = 'Not authorized'
+            
+            return Response(json.dumps(json_response), status=401, mimetype='application/json')
 
 
 class Upload(Resource):
@@ -51,24 +66,31 @@ class Upload(Resource):
         
         json_response = {'error': 'none', 'data': {'id': str(uuid.uuid4()), 'sha256sum': 0}}
         
-        print(data)
+        if data['Authorization'] == key:
         
-        if data['file'] is None or data['file'].filename == '':
-            
-            json_response['error'] = 'No file'
-            json_response['data'] = 'none'
-            
-            return Response(json.dumps(json_response), status=400, mimetype='application/json')
-            
+            if data['file'] is None or data['file'].filename == '':
+                
+                json_response['error'] = 'No data, use "file" form parameter'
+                json_response['data'] = 'none'
+                
+                return Response(json.dumps(json_response), status=401, mimetype='application/json')
+                
+            else:
+                            
+                file_name = root_path + json_response['data']['id'] + "." + data['file'].filename.rsplit('.', 1)[1].lower()
+                
+                print(file_name)
+                
+                data['file'].save(file_name)
+                
+                return Response(json.dumps(json_response), status=200, mimetype='application/json')
+                
         else:
-                        
-            file_name = root_path + json_response['data']['id'] + "." + data['file'].filename.rsplit('.', 1)[1].lower()
             
-            print(file_name)
+            json_response['error'] = 'Not authorized'
             
-            data['file'].save(file_name)
-            
-            return Response(json.dumps(json_response), status=200, mimetype='application/json')
+            return Response(json.dumps(json_response), status=401, mimetype='application/json')
+
             
 
 api.add_resource(Download, "/download")
