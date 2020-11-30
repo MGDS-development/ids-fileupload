@@ -10,7 +10,6 @@ import hashlib
 import json
 
 key = os.environ.get("IDS_FILEUPLOAD_APIKEY")
-
 print("Auth key is:", key)
 
 p1 = reqparse.RequestParser()
