@@ -4,3 +4,5 @@ services:
     build: .
     ports:
       - 60084:80
+    environment:
+      - IDS_FILEUPLOAD_APIKEY=abcd
